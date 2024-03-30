@@ -31,7 +31,9 @@ const planetDetails = (planet) => {
         <p class="fs-5 m-1">Climate: ${planet.climate}</p>
       </div>
       <div>
-        <p class="m-1">${formatter.format(planet.population)} habitants</p>
+        <p class="m-1">${
+          isNaN(planet.population) ? "no" : formatter.format(planet.population)
+        } habitants</p>
       </div>
       <div>
         <p class="m-1">Biome: ${planet.terrain}</p>
@@ -57,7 +59,6 @@ const planetDetails = (planet) => {
   </div>
   `;
 };
-
 const habitantsInfo = (habitant) => `
   <tr>
     <td>${habitant.name}</td>
