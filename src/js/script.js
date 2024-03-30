@@ -22,27 +22,48 @@ const planetButton = (planet) => {
 };
 const planetDetails = (planet) => {
   return `
-  <div
-  class="container shadow bg-primary p-4 my-4 w-75 rounded text-center planet-details text-light"
-  >
-    <div class="border border-light">
-      <p class="text-uppercase fs-1 m-1">${planet.name}</p>
+  <div class="planet-details">
+    <div class="container shadow bg-primary p-4 my-4 w-75 rounded text-center text-light">
+      <div class="border border-light">
+        <p class="text-uppercase fs-1 m-1">${planet.name}</p>
+      </div>
+      <div>
+        <p class="fs-5 m-1">Climate: ${planet.climate}</p>
+      </div>
+      <div>
+        <p class="m-1">${formatter.format(planet.population)} habitants</p>
+      </div>
+      <div>
+        <p class="m-1">Biome: ${planet.terrain}</p>
+      </div>
+      <button class="btn btn-outline-light mt-3 w-25 back-btn">Back</button>
     </div>
-    <div>
-      <p class="fs-5 m-1">Climate: ${planet.climate}</p>
+    <div class="container shadow bg-primary p-4 my-4 w-75 rounded residents-table text-center text-light">
+      <div>
+        <p class="fs-5 pb-2">Famous Residents</p>
+      </div>
+      <table class="table  table-primary table-hover">
+        <thead>
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Birth Year</th>
+          </tr>
+        </thead>
+        <tbody class="resident-info">
+          
+        </tbody>
+      </table>
     </div>
-    <div>
-      <p class="m-1">${formatter.format(planet.population)} habitants</p>
-    </div>
-    <div>
-      <p class="m-1">Biome: ${planet.terrain}</p>
-    </div>
-    <button class="btn btn-outline-light w-25 mt-3 back-btn">Back</button>
-  </div>`;
+  </div>
+  `;
 };
 
-const foundNoPlanet = (name) =>
-  `<p>Cannot find any planets named "${name}"</p>`;
+const habitantsInfo = (habitant) => `
+  <tr>
+    <td>${habitant.name}</td>
+    <td>${habitant.birth_year}</td>
+  </tr>
+`;
 
 // HELPERS
 const formatter = new Intl.NumberFormat("en-US", {
@@ -89,6 +110,14 @@ const showPlanetDetails = async function (event, search = false) {
   toggleView(planetDetailsDiv, "SHOW");
   planetDetailsDiv.insertAdjacentHTML("afterbegin", planetDetails(planetData));
 
+  if (planetData.residents.length === 0) {
+    const prevPlanet = document.querySelector(".planet-details");
+    const table = document.querySelector(".residents-table");
+    prevPlanet.removeChild(table);
+  } else {
+    planetData.residents.forEach((resident) => showHabitantDetail(resident));
+  }
+
   backBtn = document.querySelector(".back-btn");
   backBtn.addEventListener("click", () => {
     toggleView(planetsDiv, "SHOW");
@@ -99,13 +128,21 @@ const showPlanetDetails = async function (event, search = false) {
   });
 };
 
+const showHabitantDetail = async function (resident) {
+  const residentData = await AJAX(resident);
+  const table = document.querySelector(".resident-info");
+  table.insertAdjacentHTML("afterbegin", habitantsInfo(residentData));
+  console.log(residentData);
+};
+
 async function handleSearchPlanet(event) {
   event.preventDefault();
   const planet = allPlanetButtons.find(
     (btn) => btn.textContent.toLowerCase() === searchInput.value.toLowerCase()
   );
 
-  if (!planet) return alert(`Can't find any planets named "${searchInput.value}"`);
+  if (!planet)
+    return alert(`Can't find any planets named "${searchInput.value}"`);
 
   showPlanetDetails(planet.dataset.url, true);
   searchInput.value = "";
