@@ -145,6 +145,8 @@ async function handleSearchPlanet(event) {
   if (!planet)
     return alert(`Can't find any planets named "${searchInput.value}"`);
 
+  const prevPlanet = document.querySelector(".planet-details");
+  planetDetailsDiv.removeChild(prevPlanet);
   showPlanetDetails(planet.dataset.url, true);
   searchInput.value = "";
 }
