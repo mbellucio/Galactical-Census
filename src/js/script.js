@@ -133,7 +133,6 @@ const showHabitantDetail = async function (resident) {
   const residentData = await AJAX(resident);
   const table = document.querySelector(".resident-info");
   table.insertAdjacentHTML("afterbegin", habitantsInfo(residentData));
-  console.log(residentData);
 };
 
 async function handleSearchPlanet(event) {
@@ -145,10 +144,13 @@ async function handleSearchPlanet(event) {
   if (!planet)
     return alert(`Can't find any planets named "${searchInput.value}"`);
 
-  const prevPlanet = document.querySelector(".planet-details");
-  planetDetailsDiv.removeChild(prevPlanet);
+  const table = document.querySelector(".residents-table");
+  if (table) {
+    const prevPlanet = document.querySelector(".planet-details");
+    prevPlanet.removeChild(table);
+  }
+
   showPlanetDetails(planet.dataset.url, true);
   searchInput.value = "";
 }
-
 renderPlanets();
