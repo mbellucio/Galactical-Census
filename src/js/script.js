@@ -8,8 +8,13 @@ const planetsDiv = document.querySelector(".planets");
 const planetDetailsDiv = document.querySelector(".planets-details");
 const searchBtn = document.querySelector(".search-btn");
 const searchInput = document.querySelector(".search-input");
+const errorDiv = document.querySelector(".error-msg");
 let allPlanetButtons = [];
 let backBtn;
+
+let state = {
+  error: false,
+};
 
 // event listeners
 searchBtn.addEventListener("click", handleSearchPlanet);
@@ -23,7 +28,7 @@ const planetButton = (planet) => {
 const planetDetails = (planet) => {
   return `
   <div class="planet-details">
-    <div class="container shadow bg-primary p-4 my-4 w-75 rounded text-center text-light">
+    <div class="container shadow bg-primary p-3 w-75 rounded text-center text-light">
       <div class="border border-light">
         <p class="text-uppercase fs-1 m-1">${planet.name}</p>
       </div>
@@ -66,6 +71,10 @@ const habitantsInfo = (habitant) => `
   </tr>
 `;
 
+const errorMsg = (name) => `
+  <p class="text-danger fs-5 e-msg">Could not find any planets named: "${name}"</p>
+`;
+
 // HELPERS
 const formatter = new Intl.NumberFormat("en-US", {
   style: "decimal",
@@ -91,6 +100,21 @@ const toggleView = function (parent, action) {
   actions[action]();
 };
 
+const errorReducer = function (action, query = "value") {
+  if (action == "REMOVE") {
+    const message = document.querySelector(".e-msg");
+    toggleView(errorDiv, "HIDE");
+    errorDiv.removeChild(message);
+    state.error = false;
+  }
+
+  if (action == "ADD") {
+    errorDiv.insertAdjacentHTML("afterbegin", errorMsg(query));
+    toggleView(errorDiv, "SHOW");
+    state.error = true;
+  }
+};
+
 const renderPlanets = async function () {
   const data = await AJAX(PLANETS);
   const planets = data.results;
@@ -107,6 +131,7 @@ const showPlanetDetails = async function (event, search = false) {
   const endpoint = search ? event : event.target.dataset.url;
   const planetData = await AJAX(endpoint);
 
+  if (state.error) errorReducer("REMOVE");
   toggleView(planetsDiv, "HIDE");
   toggleView(planetDetailsDiv, "SHOW");
   planetDetailsDiv.insertAdjacentHTML("afterbegin", planetDetails(planetData));
@@ -123,6 +148,7 @@ const showPlanetDetails = async function (event, search = false) {
   backBtn.addEventListener("click", () => {
     toggleView(planetsDiv, "SHOW");
     toggleView(planetDetailsDiv, "HIDE");
+    if (state.error) errorReducer("REMOVE");
 
     const prevPlanet = document.querySelector(".planet-details");
     planetDetailsDiv.removeChild(prevPlanet);
@@ -141,8 +167,11 @@ async function handleSearchPlanet(event) {
     (btn) => btn.textContent.toLowerCase() === searchInput.value.toLowerCase()
   );
 
-  if (!planet)
-    return alert(`Can't find any planets named "${searchInput.value}"`);
+  if (!planet) {
+    // errorDiv.insertAdjacentHTML("afterbegin", errorMsg(searchInput.value));
+    // return toggleView(errorDiv, "SHOW");
+    return errorReducer("ADD", searchInput.value);
+  }
 
   const prevPlanet = document.querySelector(".planet-details");
   if (prevPlanet) {
